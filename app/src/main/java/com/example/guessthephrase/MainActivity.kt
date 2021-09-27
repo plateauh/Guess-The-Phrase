@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkPhraseGuess(){
         val userPhrase = input.text.toString()
         if (userPhrase.equals(phrase.getPhrase(), true)){
-            alert() // that's it? check if there's something else
+            alert("You won!")
         }
         else {
             guessList.add("Wrong guess: $userPhrase")
@@ -99,10 +99,13 @@ class MainActivity : AppCompatActivity() {
             recyclerView.adapter!!.notifyDataSetChanged()
             input.setText("")
             // if phraseDecoded is phrase.getPhrase() or guessCount == 0
-            if (phraseDecoded == phrase.getPhrase() || guessCount == 0){
-                // alert user with the phrase and disable input & button
-                alert()
-            }
+            if (phraseDecoded == phrase.getPhrase())
+                // alert user with the phrase
+                alert("You won!")
+
+            if (guessCount == 0)
+                alert("You lost :(")
+
         }
         else {
             // if no, add to guessList "No $letter s found\n$--guessCount guesses remaining"
@@ -111,7 +114,7 @@ class MainActivity : AppCompatActivity() {
             input.setText("")
             if (guessCount == 0){
                 // alert user with the phrase and disable input & button
-                alert()
+                alert("You lost :(")
             }
         }
         // add letter to guessedLetters and update letterView
@@ -121,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         input.hint = "Guess the full phrase"
     }
 
-    private fun alert(){
+    private fun alert(status: String){
         val dialogBuilder = AlertDialog.Builder(this)
         dialogBuilder.setMessage("The phrase was: ${phrase.getPhrase()}.")
                 .setPositiveButton("Play Again", DialogInterface.OnClickListener{
@@ -133,7 +136,7 @@ class MainActivity : AppCompatActivity() {
                     button.isEnabled = false
                 })
         val alert = dialogBuilder.create()
-        alert.setTitle("Game ended!")
+        alert.setTitle(status)
         alert.show()
     }
 
