@@ -1,6 +1,8 @@
 package com.example.guessthephrase
 
+import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -23,11 +25,15 @@ lateinit var letterView: TextView
 lateinit var recyclerView: RecyclerView
 lateinit var input: EditText
 lateinit var button: Button
+lateinit var sharedPreferences: SharedPreferences
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize shared preferences
+        sharedPreferences = this.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
 
         // Initialize views
         constraintLayout = findViewById(R.id.cl)
@@ -125,8 +131,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun alert(status: String){
+        var alertTitle = status
+        var newScore = guessCount * 10
+        var currentScore = sharedPreferences.getString("highestScore", "0")
+        var message = "The phrase is: ${phrase.getPhrase()}.\nYour highest score is $currentScore"
+        var newRecord = newScore > currentScore!!.toInt()
+        if (newRecord){
+            alertTitle = "New record!"
+            message = "The phrase is: ${phrase.getPhrase()}.\nYour highest score is $currentScore"
+            with(sharedPreferences.edit()) {
+                putString("highestScore", newScore.toString())
+                apply()
+            }
+        }
         val dialogBuilder = AlertDialog.Builder(this)
-        dialogBuilder.setMessage("The phrase was: ${phrase.getPhrase()}.")
+        dialogBuilder.setMessage(message)
                 .setPositiveButton("Play Again", DialogInterface.OnClickListener{
                     _, _ -> setGame()
                 })
@@ -136,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                     button.isEnabled = false
                 })
         val alert = dialogBuilder.create()
-        alert.setTitle(status)
+        alert.setTitle(alertTitle)
         alert.show()
     }
 
