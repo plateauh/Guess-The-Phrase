@@ -1,7 +1,6 @@
 package com.example.guessthephrase
 
 import android.util.Log
-import java.text.ParsePosition
 import kotlin.random.Random
 
 class Phrase {
@@ -14,7 +13,8 @@ class Phrase {
             "Work hard",
             "Do not give up",
             "No pain no gain",
-            "Everything will be OK"
+            "Everything will be OK",
+            "Life is short stay awake for it"
     )
 
     /*
