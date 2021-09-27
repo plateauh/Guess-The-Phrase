@@ -11,10 +11,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlin.random.Random
 
 lateinit var phrase: Phrase
+lateinit var turn: String
 var guessCount = 10
 lateinit var guessList: ArrayList<String>
 lateinit var guessedLetters: ArrayList<Char>
@@ -41,14 +40,14 @@ class MainActivity : AppCompatActivity() {
         setGame()
 
         button.setOnClickListener {
-            // First make sure that there is one letter entered, show a snack bar otherwise
-            if (input.text.length > 1){
-                Snackbar.make(constraintLayout, "Enter one letter only", Snackbar.LENGTH_SHORT).show()
-                input.setText("")
+            if (input.text.isEmpty()){
+                Snackbar.make(constraintLayout, "Enter a $turn", Snackbar.LENGTH_SHORT).show()
             }
-            else {
-                checkGuess()
-            }
+            else
+                when(turn) {
+                    "phrase" -> checkPhraseGuess()
+                    "letter" -> checkLetterGuess()
+                }
         }
 
     }
@@ -60,12 +59,35 @@ class MainActivity : AppCompatActivity() {
         guessedLetters = arrayListOf()
         phraseView.text = "Phrase: ${phrase.encodePhrase()}"
         letterView.text = "Guessed Letters: "
+        input.setText("")
         recyclerView = findViewById(R.id.rvGuesses)
         recyclerView.adapter = RecyclerViewAdapter(guessList)
         recyclerView.layoutManager = LinearLayoutManager(this)
+        turn = "phrase"
     }
 
-    private fun checkGuess(){
+    private fun checkPhraseGuess(){
+        val userPhrase = input.text.toString()
+        if (userPhrase.equals(phrase.getPhrase(), true)){
+            alert() // that's it? check if there's something else
+        }
+        else {
+            guessList.add("Wrong guess: $userPhrase")
+            input.setText("")
+            recyclerView.adapter!!.notifyDataSetChanged()
+        }
+        input.hint = "Guess a letter"
+        turn = "letter"
+    }
+
+    private fun checkLetterGuess(){
+        // First make sure that there is one letter entered, show a snack bar otherwise
+        if (input.text.length > 1){
+            Snackbar.make(constraintLayout, "Enter one letter only", Snackbar.LENGTH_SHORT).show()
+            input.setText("")
+            return
+        }
+
         val letter = input.text.toString()[0]
         // Then check if that letter is in the phrase chosen using letterOccurrences()
         val occurrences = phrase.letterOccurrences(letter)
@@ -95,11 +117,13 @@ class MainActivity : AppCompatActivity() {
         // add letter to guessedLetters and update letterView
         guessedLetters.add(letter)
         letterView.text = "Guessed Letters: $guessedLetters"
+        turn = "phrase"
+        input.hint = "Guess the full phrase"
     }
 
     private fun alert(){
         val dialogBuilder = AlertDialog.Builder(this)
-        dialogBuilder.setMessage("The phrase was: ${phrase.getPhrase()}")
+        dialogBuilder.setMessage("The phrase was: ${phrase.getPhrase()}.")
                 .setPositiveButton("Play Again", DialogInterface.OnClickListener{
                     _, _ -> setGame()
                 })
